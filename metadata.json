@@ -1,0 +1,5 @@
+{
+  "name": "Google Cloud Release Notes Tracker",
+  "description": "An application to view, filter, and sort release notes for Google Cloud products. Features an AI-powered Release Assistant to answer your questions about the latest updates, plus dark/light mode and favorites.",
+  "requestFramePermissions": []
+}
