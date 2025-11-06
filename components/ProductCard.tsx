@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import type { Product, Change } from '../types';
 import { changeTypeConfig } from '../constants';
 import { StarIcon } from './Icons';
+import { UserSettingsContext } from '../contexts/UserSettingsContext';
 
 interface ProductCardProps {
   product: Product;
-  isFavorited: boolean;
-  toggleFavorite: (productId: string) => void;
   style?: React.CSSProperties;
 }
 
@@ -43,7 +42,24 @@ const ChangeItem: React.FC<{ change: Change }> = ({ change }) => {
 };
 
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, isFavorited, toggleFavorite, style }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, style }) => {
+  const userSettingsContext = useContext(UserSettingsContext);
+
+  if (!userSettingsContext) {
+    throw new Error('ProductCard must be used within a UserSettingsProvider');
+  }
+
+  const { settings, addFavorite, removeFavorite } = userSettingsContext;
+  const isFavorited = settings.favorites.includes(product.id);
+
+  const handleToggleFavorite = () => {
+    if (isFavorited) {
+      removeFavorite(product.id);
+    } else {
+      addFavorite(product.id);
+    }
+  };
+
   return (
     <div 
       className="bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden animate-slide-in"
@@ -60,7 +76,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, isFavorited, 
           <h2 className="text-xl font-bold text-slate-800 dark:text-white group-hover:underline group-hover:text-gcp-blue transition-colors">{product.name}</h2>
         </a>
         <button
-          onClick={() => toggleFavorite(product.id)}
+          onClick={handleToggleFavorite}
           className={`p-2 rounded-full transition-colors ${
             isFavorited ? 'text-gcp-yellow' : 'text-slate-400 hover:text-gcp-yellow'
           }`}

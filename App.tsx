@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Product, ChangeType, SortOption } from './types';
 import { initialProducts } from './services/dataService';
@@ -7,6 +6,7 @@ import { Header } from './components/Header';
 import { AiResponseCard } from './components/AiResponseCard';
 import { ProductGrid } from './components/ProductGrid';
 import { Footer } from './components/Footer';
+import { UserSettingsProvider } from './contexts/UserSettingsContext';
 
 const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(initialProducts);
@@ -15,13 +15,6 @@ const App: React.FC = () => {
       return localStorage.getItem('darkMode') === 'true';
     }
     return false;
-  });
-  const [favorites, setFavorites] = useState<Set<string>>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const savedFavorites = localStorage.getItem('favorites');
-      return new Set(savedFavorites ? JSON.parse(savedFavorites) : []);
-    }
-    return new Set();
   });
   const [showFavoritesOnly, setShowFavoritesOnly] = useState<boolean>(false);
   const [activeFilters, setActiveFilters] = useState<Set<ChangeType>>(new Set());
@@ -41,10 +34,6 @@ const App: React.FC = () => {
       localStorage.setItem('darkMode', 'false');
     }
   }, [isDarkMode]);
-
-  useEffect(() => {
-    localStorage.setItem('favorites', JSON.stringify(Array.from(favorites)));
-  }, [favorites]);
 
   const handleAiSearch = useCallback(async (query: string) => {
     if (!query) return;
@@ -67,18 +56,6 @@ const App: React.FC = () => {
     setAiError(null);
   }, []);
 
-  const toggleFavorite = useCallback((productId: string) => {
-    setFavorites(prevFavorites => {
-      const newFavorites = new Set(prevFavorites);
-      if (newFavorites.has(productId)) {
-        newFavorites.delete(productId);
-      } else {
-        newFavorites.add(productId);
-      }
-      return newFavorites;
-    });
-  }, []);
-  
   const toggleFilter = useCallback((filter: ChangeType) => {
     setActiveFilters(prevFilters => {
       const newFilters = new Set(prevFilters);
@@ -98,9 +75,7 @@ const App: React.FC = () => {
   const displayedProducts = useMemo(() => {
     let filteredProducts = [...products];
 
-    if (showFavoritesOnly) {
-      filteredProducts = filteredProducts.filter(p => favorites.has(p.id));
-    }
+    // Favorites filtering is now handled in ProductGrid
 
     if (activeFilters.size > 0) {
       filteredProducts = filteredProducts
@@ -122,40 +97,39 @@ const App: React.FC = () => {
     }
 
     return filteredProducts;
-  }, [products, showFavoritesOnly, favorites, activeFilters, sortOption]);
+  }, [products, activeFilters, sortOption]);
 
   return (
-    <div className="min-h-screen font-sans text-slate-800 dark:text-slate-200">
-      <main className="container mx-auto px-4 py-8">
-        <Header 
-          isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
-          showFavoritesOnly={showFavoritesOnly}
-          setShowFavoritesOnly={setShowFavoritesOnly}
-          activeFilters={activeFilters}
-          toggleFilter={toggleFilter}
-          clearFilters={clearFilters}
-          hasActiveFilters={activeFilters.size > 0}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-          hasFavorites={favorites.size > 0}
-          onAiSearch={handleAiSearch}
-          isAiLoading={isAiLoading}
-        />
-        <AiResponseCard 
-          isLoading={isAiLoading}
-          response={aiResponse}
-          error={aiError}
-          onClear={clearAiResponse}
-        />
-        <ProductGrid 
-          products={displayedProducts}
-          favorites={favorites}
-          toggleFavorite={toggleFavorite}
-        />
-        <Footer />
-      </main>
-    </div>
+    <UserSettingsProvider>
+      <div className="min-h-screen font-sans text-slate-800 dark:text-slate-200">
+        <main className="container mx-auto px-4 py-8">
+          <Header
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
+            showFavoritesOnly={showFavoritesOnly}
+            setShowFavoritesOnly={setShowFavoritesOnly}
+            activeFilters={activeFilters}
+            toggleFilter={toggleFilter}
+            clearFilters={clearFilters}
+            hasActiveFilters={activeFilters.size > 0}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            onAiSearch={handleAiSearch}
+            isAiLoading={isAiLoading}
+          />
+          <AiResponseCard
+            isLoading={isAiLoading}
+            response={aiResponse}
+            error={aiError}
+            onClear={clearAiResponse}
+          />
+          <ProductGrid
+            products={displayedProducts}
+          />
+          <Footer />
+        </main>
+      </div>
+    </UserSettingsProvider>
   );
 };
 

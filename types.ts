@@ -27,3 +27,11 @@ export interface Product {
 }
 
 export type SortOption = 'recent' | 'alphabetical';
+
+export interface UserSettings {
+  favorites: string[]; // Array of product IDs
+  sortBy: 'name' | 'category';
+  filter: {
+    category: string | null;
+  };
+}

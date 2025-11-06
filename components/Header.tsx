@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { ChangeType, type SortOption } from '../types';
 import { changeTypeConfig } from '../constants';
 import {
@@ -12,6 +12,7 @@ import {
   ChevronDownIcon,
   CloudIcon,
 } from './Icons';
+import { UserSettingsContext } from '../contexts/UserSettingsContext';
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -24,7 +25,6 @@ interface HeaderProps {
   hasActiveFilters: boolean;
   sortOption: SortOption;
   setSortOption: (option: SortOption) => void;
-  hasFavorites: boolean;
   onAiSearch: (query: string) => void;
   isAiLoading: boolean;
 }
@@ -104,11 +104,18 @@ export const Header: React.FC<HeaderProps> = ({
   hasActiveFilters,
   sortOption,
   setSortOption,
-  hasFavorites,
   onAiSearch,
   isAiLoading,
 }) => {
   const [isFilterVisible, setIsFilterVisible] = useState(true);
+  const userSettingsContext = useContext(UserSettingsContext);
+
+  if (!userSettingsContext) {
+    throw new Error('Header must be used within a UserSettingsProvider');
+  }
+
+  const { settings } = userSettingsContext;
+  const hasFavorites = settings.favorites.length > 0;
 
   return (
     <header className="mb-8">
