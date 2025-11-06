@@ -1,14 +1,13 @@
 // FIX: Import React to use React.ReactNode type.
 import type React from 'react';
 
-export enum ChangeType {
-  GA = "General Availability",
-  Preview = "Preview",
-  BugFix = "Bug Fix",
-  Feature = "New Feature",
-  Deprecated = "Deprecation",
-  Security = "Security Bulletin",
-}
+export type ChangeType =
+  | 'General Availability'
+  | 'Preview'
+  | 'Bug Fix'
+  | 'New Feature'
+  | 'Deprecation'
+  | 'Security Bulletin';
 
 export interface Change {
   id: string;
