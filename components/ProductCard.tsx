@@ -11,7 +11,10 @@ interface ProductCardProps {
 }
 
 const ChangeItem: React.FC<{ change: Change }> = ({ change }) => {
-  const config = changeTypeConfig[change.type];
+  const config = changeTypeConfig[change.type as keyof typeof changeTypeConfig];
+  if (!config) {
+    return null;
+  }
   const date = new Date(change.date);
   const formattedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 

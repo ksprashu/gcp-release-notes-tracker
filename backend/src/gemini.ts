@@ -1,11 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
-import type { Product } from '../types';
+import type { Product, Change } from './types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 function formatProductDataForPrompt(products: Product[]): string {
     return products.map(p => {
-        const changes = p.changes.map(c => 
+        const changes = p.changes.map((c: Change) =>
             `- (${c.date.split('T')[0]}, ${c.type}): ${c.description}`
         ).join('\n');
         return `Product: ${p.name}\n${changes}`;
@@ -40,7 +40,7 @@ export const getAiAssistedAnswer = async (query: string, products: Product[]): P
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
-    return response.text;
+    return response.text || "No response text from Gemini.";
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw new Error("Could not get an answer from the Gemini API.");

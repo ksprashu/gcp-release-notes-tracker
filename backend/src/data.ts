@@ -1,5 +1,4 @@
-import React from 'react';
-import { Product, ChangeType } from '../types';
+import { Product, ChangeType } from './types';
 
 const today = new Date();
 const daysAgo = (days: number) => new Date(today.getTime() - days * 24 * 60 * 60 * 1000).toISOString();

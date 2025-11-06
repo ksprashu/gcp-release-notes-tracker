@@ -1,15 +1,13 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import type { Product, ChangeType, SortOption } from './types';
-import { initialProducts } from './services/dataService';
-import { getAiAssistedAnswer } from './services/geminiService';
 import { Header } from './components/Header';
 import { AiResponseCard } from './components/AiResponseCard';
 import { ProductGrid } from './components/ProductGrid';
 import { Footer } from './components/Footer';
 
 const App: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
       return localStorage.getItem('darkMode') === 'true';
@@ -33,6 +31,13 @@ const App: React.FC = () => {
   const [aiError, setAiError] = useState<string | null>(null);
 
   useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(setProducts)
+      .catch(err => console.error("Failed to fetch products:", err));
+  }, []);
+
+  useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('darkMode', 'true');
@@ -52,15 +57,23 @@ const App: React.FC = () => {
     setAiResponse(null);
     setAiError(null);
     try {
-      const response = await getAiAssistedAnswer(query, products);
-      setAiResponse(response);
+      const response = await fetch('/api/ai-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+      if (!response.ok) {
+        throw new Error('AI search request failed');
+      }
+      const data = await response.json();
+      setAiResponse(data.answer);
     } catch (error) {
       console.error("AI search failed:", error);
       setAiError("Sorry, I couldn't get an answer. Please try again.");
     } finally {
       setIsAiLoading(false);
     }
-  }, [products]);
+  }, []);
 
   const clearAiResponse = useCallback(() => {
     setAiResponse(null);
